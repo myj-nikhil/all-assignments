@@ -11,7 +11,8 @@ function createDomElements(data) {
       // Create a new element
       var childElement = document.createElement("div");
       childElement.dataset.id = item.id; // Store the ID on the element for future lookups
-  
+      
+      console.log(childElement)
       var grandChildElement1 = document.createElement("span");
       grandChildElement1.innerHTML = item.title
   
@@ -42,5 +43,5 @@ function createDomElements(data) {
     }
   
     createDomElements(todos)
-  }, 5000)
+  }, 1000)
   

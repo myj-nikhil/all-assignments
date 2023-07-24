@@ -41,9 +41,107 @@
  */
 const express = require('express');
 const bodyParser = require('body-parser');
+var fs = require('fs');
+const { request } = require('http');
+
+
+fs.readFile('todofile.txt', 'utf8' ,function (error,data) {
+  if(error) {
+      console.error(error);
+      return;
+  }
+  console.log(data);    
+})
 
 const app = express();
 
 app.use(bodyParser.json());
+
+let todos = [];
+
+function generateRandomToken(length) {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    token += characters.charAt(randomIndex);
+  }
+  return token;
+}
+
+class Todo {
+  constructor (id, title, completed, description){
+    this.id = id;
+    this.title = title;
+    this.completed = completed;
+    this.description = description;
+  }
+}
+
+app.get('/', (request, response) => {
+  response.status(200).json({
+    "title":"Welcome to home"
+  })
+})
+
+app.get('/todos',(request, response) => {
+  response.status(200).send(todos)
+})
+
+app.get('/todos/:id',(request, response) => {
+  let id = request.params.id;
+  let todo = todos.find(todo => todo.id == id);
+  if(todo !== undefined) {
+    response.status(200).json(todo)
+  }
+  else if (todo == undefined) {
+    response.status(404).send('Todo not found')
+  }
+})
+
+app.post('/todos', (request, response) => {
+  let {title ,completed ,description} = request.body;
+  let todo = new Todo;
+
+  todo.id = generateRandomToken(7);
+  todo.title = title;
+  todo.completed = completed;
+  todo.description = description;
+  todos.push(todo);
+  response.status(201).json({"id":todo.id})
+})
+
+app.put('/todos/:id',(request,response) => {
+  let id = request.params.id;
+  let {title ,completed ,description} = request.body;
+  let index = todos.findIndex(todo => todo.id == id);
+  
+  if(index !== -1) {
+    let todo = new Todo;
+    todo.id = id;
+    todo.title = title;
+    todo.completed = completed;
+    todo.description = description;
+    todos[index] = todo;
+    response.status(200).send('Todo updated');
+  }
+  else if (index == -1) {
+    response.status(404).send('Todo not found')
+  }
+})
+
+app.delete('/todos/:id',(request,response) => {
+  let id = request.params.id;
+  let index = todos.findIndex(todo => todo.id == id);
+  if(index !== -1) {
+   todos.splice(index,1);
+    response.status(200).send("todo deleted");
+  }
+  else if (index == -1) {
+    response.status(404).send('Todo not found')
+  }
+})
+
 
 module.exports = app;

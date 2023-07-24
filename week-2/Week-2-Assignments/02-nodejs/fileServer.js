@@ -18,8 +18,49 @@
  */
 const express = require('express');
 const fs = require('fs');
+const { request } = require('http');
 const path = require('path');
 const app = express();
 
+const directoryPath = './files';
+
+const getFiles = (request,response) => {
+  
+  fs.readdir(directoryPath, (err, files) => {
+    if (err) {
+      console.log('Error reading directory:', err);
+      response.status(500).send('Route not found');
+    }
+    else {
+      response.status(200).send(files);
+    }
+  })
+ 
+}
+
+
+
+
+app.get('/files',getFiles)
+
+app.get('/file/:filename', (request, response) => {
+  const fileName =  request.params.filename;
+  let a = directoryPath.concat('/').concat(fileName);
+  fs.readFile(a, 'utf8',(err, files) => {
+    if (err) {
+      // console.log('Error reading file:', err);
+      response.status(404).send('File not found');
+    }
+    else {
+      response.status(200).send(files);
+    }
+  })
+
+
+})
+
+app.get('*', function (req, res) {
+  res.status(404).send('Route not found');
+})
 
 module.exports = app;
